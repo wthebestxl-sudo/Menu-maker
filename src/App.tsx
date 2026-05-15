@@ -281,12 +281,22 @@ export default function App() {
     try {
       setIsExporting(true);
       await new Promise(resolve => setTimeout(resolve, 100));
+      // Safari workaround: Warm up the cache by rendering a few times first
+      for (let i = 0; i < 3; i++) {
+        await htmlToImage.toPng(previewRef.current, {
+          cacheBust: true,
+          pixelRatio: 0.1,
+          fetchRequestInit: { cache: 'no-cache' }
+        }).catch(() => {});
+      }
       
+      // Final high-resolution render
       const dataUrl = await htmlToImage.toPng(previewRef.current, {
         pixelRatio: 2,
         backgroundColor: '#fdfbf5',
+        cacheBust: true,
+        fetchRequestInit: { cache: 'no-cache' }
       });
-      
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = `menu-${new Date().getTime()}.png`;
