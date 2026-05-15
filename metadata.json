@@ -1,0 +1,5 @@
+{
+  "name": "Auto Menu Maker",
+  "description": "Upload images to automatically generate and download an A4 restaurant menu.",
+  "requestFramePermissions": []
+}
