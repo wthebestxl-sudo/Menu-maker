@@ -557,6 +557,7 @@ export default function App() {
                         <img
                           src={item.url}
                           alt={item.name}
+                          crossOrigin="anonymous"
                           className="w-full h-full object-cover pointer-events-none"
                         />
                         {/* Overlay for real images on hover to hint they can click to edit */}
