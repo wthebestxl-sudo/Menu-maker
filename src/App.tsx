@@ -78,6 +78,32 @@ export default function App() {
   // Saving State
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
 
+  // PWA Install State
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', () => setIsInstalled(true));
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') setIsInstalled(true);
+    setInstallPrompt(null);
+  };
+
   useEffect(() => {
     const stateToSave = { items, layout, menuTitle, menuDate, menuSubtitle, badgeText, timestamp: Date.now() };
     localStorage.setItem('menuAppState', JSON.stringify(stateToSave));
@@ -642,12 +668,22 @@ export default function App() {
       </div>
 
       {/* Mobile Sticky Download Button */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 z-40 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 z-40 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] flex gap-2">
+        {installPrompt && !isInstalled && (
+          <button
+            onClick={handleInstall}
+            className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl font-bold bg-[#f4d068] text-[#5c3a21] hover:bg-[#e8c050] active:scale-[0.98] transition-all shadow-sm shrink-0"
+            title="เพิ่มลงหน้าจอหลัก"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg>
+            ติดตั้ง
+          </button>
+        )}
         <button
           onClick={handleExport}
           disabled={items.length === 0 || isExporting}
           className={cn(
-            "w-full py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm text-lg",
+            "flex-1 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm text-lg",
             items.length === 0
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
               : "bg-[#5c3a21] text-white hover:bg-[#4a2e1a] active:scale-[0.98]"
