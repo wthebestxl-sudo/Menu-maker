@@ -1,0 +1,27 @@
+{
+  "name": "เมนูวันนี้",
+  "short_name": "เมนู",
+  "description": "สร้างเมนูอาหารสวยงามพร้อมดาวน์โหลด",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfbf5",
+  "theme_color": "#5c3a21",
+  "orientation": "portrait",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["food", "utilities", "productivity"]
+}
