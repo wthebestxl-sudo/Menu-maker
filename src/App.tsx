@@ -669,15 +669,27 @@ export default function App() {
 
       {/* Mobile Sticky Download Button */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 z-40 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] flex gap-2">
-        {installPrompt && !isInstalled && (
-          <button
-            onClick={handleInstall}
-            className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl font-bold bg-[#f4d068] text-[#5c3a21] hover:bg-[#e8c050] active:scale-[0.98] transition-all shadow-sm shrink-0"
-            title="เพิ่มลงหน้าจอหลัก"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg>
-            ติดตั้ง
-          </button>
+        {!isInstalled && (
+          <div className="relative shrink-0">
+            <button
+              onClick={() => {
+                if (installPrompt) {
+                  handleInstall();
+                } else {
+                  // Show tooltip for manual install
+                  const el = document.getElementById('install-tip');
+                  if (el) { el.classList.toggle('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); }
+                }
+              }}
+              className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gray-100 text-gray-400 hover:bg-[#f4d068]/40 hover:text-[#5c3a21] active:scale-95 transition-all"
+              title="เพิ่มลงหน้าจอหลัก"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+            </button>
+            <div id="install-tip" className="hidden absolute bottom-14 left-0 bg-gray-800 text-white text-xs rounded-xl p-3 w-48 shadow-xl z-50">
+              กด <b>⋮ เมนู</b> แล้วเลือก<br/><b>"เพิ่มลงหน้าจอหลัก"</b>
+            </div>
+          </div>
         )}
         <button
           onClick={handleExport}
