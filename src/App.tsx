@@ -275,35 +275,64 @@ export default function App() {
     );
   };
 
+  const toBase64 = (url: string): Promise<string> => {
+    return new Promise((resolve) => {
+      // Route through server-side proxy (same origin = no CORS issues on iOS)
+      const fetchUrl = url.startsWith('http') 
+        ? `/api/proxy-image?url=${encodeURIComponent(url)}`
+        : url;
+      
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0);
+        try {
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        } catch {
+          resolve(url);
+        }
+      };
+      img.onerror = () => resolve(url);
+      img.src = fetchUrl;
+    });
+  };
+
   const handleExport = async () => {
     if (!previewRef.current || items.length === 0) return;
     
     try {
       setIsExporting(true);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      // Safari workaround: Warm up the cache by rendering a few times first
-      for (let i = 0; i < 3; i++) {
-        await htmlToImage.toPng(previewRef.current, {
-          cacheBust: true,
-          pixelRatio: 0.1,
-          fetchRequestInit: { cache: 'no-cache' }
-        }).catch(() => {});
-      }
       
-      // Final high-resolution render
+      // Preload all external images as base64 via canvas to bypass CORS on mobile
+      const convertedItems = await Promise.all(
+        items.map(async (item) => {
+          if (!item.url.startsWith('http')) return item;
+          const base64 = await toBase64(item.url);
+          return { ...item, url: base64 };
+        })
+      );
+      
+      // Temporarily replace items with base64 versions for rendering
+      setItems(convertedItems);
+      // Give React time to re-render with base64 images
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const dataUrl = await htmlToImage.toPng(previewRef.current, {
         pixelRatio: 2,
         backgroundColor: '#fdfbf5',
-        cacheBust: true,
-        fetchRequestInit: { cache: 'no-cache' }
+        skipFonts: false,
       });
+      
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = `menu-${new Date().getTime()}.png`;
       link.click();
     } catch (error) {
       console.error('Export failed:', error);
-      alert('เกิดข้อผิดพลาดในการดาวน์โหลดรูปภาพ');
+      alert('เกิดข้อผิดพลาดในการดาวน์โหลดรูปภาพ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setIsExporting(false);
     }
